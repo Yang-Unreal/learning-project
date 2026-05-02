@@ -19,7 +19,7 @@ const canisterId = canisterEnv["PUBLIC_CANISTER_ID:backend"];
 // We want to fetch the root key from the replica when developing locally.
 const helloWorldActor = createActor(canisterId, {
 	agentOptions: {
-		rootKey: !import.meta.env.DEV ? canisterEnv!.IC_ROOT_KEY : undefined,
+		rootKey: !import.meta.env.DEV ? canisterEnv?.IC_ROOT_KEY : undefined,
 		shouldFetchRootKey: import.meta.env.DEV,
 	},
 });
@@ -40,7 +40,7 @@ function App() {
 	return (
 		<main className="page">
 			<section className="panel">
-				<div className="brand" aria-label="ICP plus Vite">
+				<div className="brand" role="img" aria-label="ICP plus Vite">
 					<img src="/icp.svg" alt="ICP logo" className="brand-icp" />
 					<span className="plus">+</span>
 					<img src="/vite.svg" alt="Vite logo" className="brand-vite" />
@@ -54,7 +54,6 @@ function App() {
 					<div className="controls">
 						<input
 							id="name"
-							alt="Name"
 							type="text"
 							className="input"
 							placeholder="Ada Lovelace"
