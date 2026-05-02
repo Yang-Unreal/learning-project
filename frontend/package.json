@@ -1,9 +1,9 @@
 {
-  "name": "icp-frontend-environment-variables",
-  "scripts": {
-    "build": "pnpm -r run build"
-  },
-  "workspaces": [
-    "app"
-  ]
+	"name": "icp-frontend-environment-variables",
+	"scripts": {
+		"build": "pnpm -r run build"
+	},
+	"workspaces": [
+		"app"
+	]
 }
