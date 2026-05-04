@@ -66,7 +66,7 @@ export default defineConfig(({ command }) => {
 				// Note: ic_root_key must be lowercase - library converts to uppercase IC_ROOT_KEY
 				"Set-Cookie": `ic_env=${encodeURIComponent(
 					`PUBLIC_CANISTER_ID:${CANISTER_NAME}=${canisterId}&ic_root_key=${rootKey}`,
-				)}; SameSite=Lax;`,
+				)}; Path=/; SameSite=Lax;`,
 			},
 			proxy: {
 				"/api": {

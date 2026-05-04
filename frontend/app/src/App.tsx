@@ -9,12 +9,20 @@ import "./App.css";
 // For this reason, we can expect the `PUBLIC_CANISTER_ID:backend` environment variable to be set.
 interface CanisterEnv {
 	readonly "PUBLIC_CANISTER_ID:backend": string;
+	readonly IC_ROOT_KEY?: string;
 }
 
 // We only want to access the environment variables when serving the frontend from the asset canister.
-// In development mode, we use a fixed canister ID for the backend canister.
-const canisterEnv = getCanisterEnv<CanisterEnv>();
+// In development mode, the Vite dev server injects these into an ic_env cookie.
+const canisterEnv = getCanisterEnv<CanisterEnv>() ?? {};
 const canisterId = canisterEnv["PUBLIC_CANISTER_ID:backend"];
+
+console.log("Canister Environment:", canisterEnv);
+console.log("Backend Canister ID:", canisterId);
+
+if (!canisterId) {
+	console.error("❌ Backend canister ID not found in environment variables.");
+}
 
 // We want to fetch the root key from the replica when developing locally.
 const helloWorldActor = createActor(canisterId, {
