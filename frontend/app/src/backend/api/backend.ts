@@ -51,15 +51,44 @@ function candid_none<T>(): [] {
 function record_opt_to_undefined<T>(arg: T | null): T | undefined {
     return arg == null ? undefined : arg;
 }
-export interface backendInterface {
-    greet(name: string): Promise<string>;
+export interface User {
+    id: bigint;
+    created: bigint;
+    name: string;
 }
+export interface backendInterface {
+    add_user(arg0: string): Promise<bigint>;
+    delete_user(arg0: bigint): Promise<boolean>;
+    get_all_users(): Promise<Array<User>>;
+    get_user(arg0: bigint): Promise<User | null>;
+    get_user_count(): Promise<bigint>;
+}
+import type { User as _User } from "./declarations/backend.did";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>){}
-    async greet(arg0: string): Promise<string> {
-        const result = await this.actor.greet(arg0);
+    async add_user(arg0: string): Promise<bigint> {
+        const result = await this.actor.add_user(arg0);
         return result;
     }
+    async delete_user(arg0: bigint): Promise<boolean> {
+        const result = await this.actor.delete_user(arg0);
+        return result;
+    }
+    async get_all_users(): Promise<Array<User>> {
+        const result = await this.actor.get_all_users();
+        return result;
+    }
+    async get_user(arg0: bigint): Promise<User | null> {
+        const result = await this.actor.get_user(arg0);
+        return from_candid_opt_n1(result);
+    }
+    async get_user_count(): Promise<bigint> {
+        const result = await this.actor.get_user_count();
+        return result;
+    }
+}
+function from_candid_opt_n1(value: [] | [_User]): User | null {
+    return value.length === 0 ? null : value[0];
 }
 export interface CreateActorOptions {
     agent?: Agent;

@@ -9,7 +9,19 @@
 import { IDL } from '@icp-sdk/core/candid';
 
 export const idlFactory = ({ IDL }) => {
-  return IDL.Service({ 'greet' : IDL.Func([IDL.Text], [IDL.Text], ['query']) });
+  const User = IDL.Record({
+    'id' : IDL.Nat64,
+    'created' : IDL.Nat64,
+    'name' : IDL.Text,
+  });
+  
+  return IDL.Service({
+    'add_user' : IDL.Func([IDL.Text], [IDL.Nat64], []),
+    'delete_user' : IDL.Func([IDL.Nat64], [IDL.Bool], []),
+    'get_all_users' : IDL.Func([], [IDL.Vec(User)], ['query']),
+    'get_user' : IDL.Func([IDL.Nat64], [IDL.Opt(User)], ['query']),
+    'get_user_count' : IDL.Func([], [IDL.Nat64], ['query']),
+  });
 };
 
 export const init = ({ IDL }) => { return []; };

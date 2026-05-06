@@ -10,6 +10,13 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface _SERVICE { 'greet' : ActorMethod<[string], string> }
+export interface User { 'id' : bigint, 'created' : bigint, 'name' : string }
+export interface _SERVICE {
+  'add_user' : ActorMethod<[string], bigint>,
+  'delete_user' : ActorMethod<[bigint], boolean>,
+  'get_all_users' : ActorMethod<[], Array<User>>,
+  'get_user' : ActorMethod<[bigint], [] | [User]>,
+  'get_user_count' : ActorMethod<[], bigint>,
+}
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

@@ -1,31 +1,27 @@
 import { getCanisterEnv } from "@icp-sdk/core/agent/canister-env";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createActor } from "./backend/api/backend";
 import "./App.css";
 
-// Here we define the environment variables that the asset canister serves.
-// By default, the CLI sets all the canister IDs in the environment variables of the asset canister
-// using the `PUBLIC_CANISTER_ID:<canister-name>` format.
-// For this reason, we can expect the `PUBLIC_CANISTER_ID:backend` environment variable to be set.
 interface CanisterEnv {
 	readonly "PUBLIC_CANISTER_ID:backend": string;
 	readonly IC_ROOT_KEY?: string;
 }
 
-// We only want to access the environment variables when serving the frontend from the asset canister.
-// In development mode, the Vite dev server injects these into an ic_env cookie.
+interface User {
+	id: bigint;
+	name: string;
+	created: bigint;
+}
+
 const canisterEnv = getCanisterEnv<CanisterEnv>() ?? {};
 const canisterId = canisterEnv["PUBLIC_CANISTER_ID:backend"];
-
-console.log("Canister Environment:", canisterEnv);
-console.log("Backend Canister ID:", canisterId);
 
 if (!canisterId) {
 	console.error("❌ Backend canister ID not found in environment variables.");
 }
 
-// We want to fetch the root key from the replica when developing locally.
-const helloWorldActor = createActor(canisterId, {
+const backendActor = createActor(canisterId, {
 	agentOptions: {
 		rootKey: !import.meta.env.DEV ? canisterEnv?.IC_ROOT_KEY : undefined,
 		shouldFetchRootKey: import.meta.env.DEV,
@@ -33,7 +29,18 @@ const helloWorldActor = createActor(canisterId, {
 });
 
 function App() {
-	const [greeting, setGreeting] = useState("");
+	const [users, setUsers] = useState<User[]>([]);
+	const [deletingId, setDeletingId] = useState<bigint | null>(null);
+
+	const fetchUsers = useCallback(() => {
+		backendActor.get_all_users().then((result: User[]) => {
+			setUsers(result);
+		});
+	}, []);
+
+	useEffect(() => {
+		fetchUsers();
+	}, [fetchUsers]);
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -41,8 +48,26 @@ function App() {
 			"name",
 		) as HTMLInputElement;
 
-		helloWorldActor.greet(nameInput.value).then(setGreeting);
+		const name = nameInput.value;
+		backendActor.add_user(name).then(() => {
+			fetchUsers();
+		});
+
+		nameInput.value = "";
 		return false;
+	}
+
+	function handleDelete(id: bigint) {
+		setDeletingId(id);
+		backendActor.delete_user(id).then(() => {
+			setDeletingId(null);
+			fetchUsers();
+		});
+	}
+
+	function formatTime(ns: bigint): string {
+		const ms = Number(ns) / 1_000_000;
+		return new Date(ms).toLocaleString();
 	}
 
 	return (
@@ -53,27 +78,50 @@ function App() {
 					<span className="plus">+</span>
 					<img src="/vite.svg" alt="Vite logo" className="brand-vite" />
 				</div>
-				<h1 className="title">Frontend Environment Variables</h1>
-				<p className="subtitle">
-					Call the backend canister and get a greeting.
-				</p>
+				<h1 className="title">Stable Memory Example</h1>
+				<p className="subtitle">Total users registered: {users.length}</p>
 				<form className="form" action="#" onSubmit={handleSubmit}>
-					<label htmlFor="name">Enter your name</label>
+					<label htmlFor="name">Add a new user</label>
 					<div className="controls">
 						<input
 							id="name"
 							type="text"
 							className="input"
-							placeholder="Ada Lovelace"
+							placeholder="Username"
+							required
 						/>
 						<button type="submit" className="button">
-							Greet me
+							Add User
 						</button>
 					</div>
 				</form>
-				<section id="greeting" className="greeting" aria-live="polite">
-					{greeting}
-				</section>
+
+				{users.length > 0 && (
+					<section className="user-list" aria-label="Registered users">
+						<h2 className="user-list-title">Registered Users</h2>
+						<ul className="user-items">
+							{users.map((user) => (
+								<li key={Number(user.id)} className="user-item">
+									<div className="user-info">
+										<span className="user-name">{user.name}</span>
+										<span className="user-meta">
+											ID: {Number(user.id)} · {formatTime(user.created)}
+										</span>
+									</div>
+									<button
+										type="button"
+										className="delete-button"
+										onClick={() => handleDelete(user.id)}
+										disabled={deletingId === user.id}
+										aria-label={`Delete user ${user.name}`}
+									>
+										{deletingId === user.id ? "…" : "✕"}
+									</button>
+								</li>
+							))}
+						</ul>
+					</section>
+				)}
 			</section>
 		</main>
 	);
