@@ -1,6 +1,6 @@
+import { execSync } from "node:child_process";
 import { icpBindgen } from "@icp-sdk/bindgen/plugins/vite";
 import react from "@vitejs/plugin-react";
-import { execSync } from "child_process";
 import { defineConfig } from "vite";
 
 // Usage: ICP_ENVIRONMENT=staging npm run dev
